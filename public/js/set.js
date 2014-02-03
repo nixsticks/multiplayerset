@@ -66,7 +66,6 @@ $(document).ready(function() {
 
 ws.onmessage = function(message) {
   var data = JSON.parse(message.data);
-  console.log(data);
 
   if (data.room === room) {
     switch(data.command) {
@@ -75,13 +74,12 @@ ws.onmessage = function(message) {
           players += 1;
           scores[players] = 0;
           $(".players").append("<h3 id='" + players + "''>player " + players + ": 0");
-          ws.send(JSON.stringify({command: "setPlayers", room: room, players: players, scores: scores, status: gameStarted}));
         }
+        ws.send(JSON.stringify({command: "setPlayers", room: room, players: players, scores: scores, status: gameStarted}));
         break;
       case "setPlayers":
         if (playerNumber === undefined) {
           if (data.status === true) {
-            console.log("this is happening")
             $youAre.text("sorry, the game has already started. you're too late.")
             $(".board").hide();
             $(".players").hide();
