@@ -6,7 +6,7 @@ var $scoreContainer = $(".score h3").first();
 var $youAre         = $(".score h3").last();
 var $button         = $(".button");
 var gameStarted     = false;
-var scores;
+var scores          = {1: 0};
 var players;
 var playerNumber;
 
@@ -174,7 +174,6 @@ ws.onopen = function(event) {
   if ($(".number").text() == 1) {
     players = 1, playerNumber = 1;
     $youAre.text("you are player 1");
-    scores = {1: 0};
   }
 }
 
