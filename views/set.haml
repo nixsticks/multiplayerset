@@ -2,12 +2,12 @@
 
 .score
   %h3 cards remaining: 81
-  %h3 
+  %h3
 
 .button
-  %h3 click to reshuffle deck
+  %h3 no sets left on the table! reshuffle?
 
-.board
+.board.hidden
   - @cards[0..11].each_slice(3) do |slice|
     .row
       - slice.each do |card|
@@ -15,6 +15,9 @@
 
 .players
   %h3{id: "1"} player 1: 0
+
+.start
+  %h3 start the game
 
 .deck.hidden
   - @cards[12..80].each do |card|

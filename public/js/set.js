@@ -3,8 +3,9 @@ var uri             = scheme + window.document.location.host + "/faye";
 var ws              = new WebSocket(uri);
 var room            = location.pathname;
 var $scoreContainer = $(".score h3").first();
-var $setContainer   = $(".score h3").last();
+var $youAre         = $(".score h3").last();
 var $button         = $(".button");
+var gameStarted     = false;
 var scores;
 var players;
 var playerNumber;
@@ -14,9 +15,10 @@ ws.onopen = function(event) {
   setTimeout(function(){
     if (!players) {
       players = 1, playerNumber = 1;
+      $youAre.text("you are player 1");
       scores = {1: 0};
     }
-  }, 3000);
+  }, 500);
 }
 
 function updatePlayers(number) {
@@ -56,6 +58,13 @@ $(document).ready(function() {
     shuffleCards();
     ws.send(JSON.stringify({command: "shuffleCards", room: room}));
   });
+
+  $(".start").on("click", function() {
+    gameStarted = true;
+    $("div.board").removeClass("hidden");
+    $(this).hide();
+    ws.send(JSON.stringify({command: "start", room: room}))
+  })
 });
 
 ws.onmessage = function(message) {
@@ -82,7 +91,14 @@ ws.onmessage = function(message) {
               $(".players").append("<h3 id='" + key + "''>player " + key + ": " + scores[key]);
             }
           }
+
+          $youAre.text("you are player " + playerNumber);
         }
+        break;
+      case "start":
+        gameStarted = true;
+        $("div.board").removeClass("hidden");
+        $(".start").hide();
         break;
       case "removeSet":
         var $cards = $(".board div.card");
@@ -97,7 +113,7 @@ ws.onmessage = function(message) {
         shuffleCards();
         break;
       case "leave":
-        $("#" + data.player).text("player " + data.player + "left the game");
+        $("#" + data.player).text("player " + data.player + " left the game");
         break;
     }
   }
@@ -113,13 +129,11 @@ function countSets() {
   if (sets === 0) {
     if ($(".card").length < 13) {
       var winner = findWinner();
-      $setContainer.text("player " + winner + " won the game!");
-    } else {
-      $setContainer.text("no sets left on the table! reshuffle?"); 
+      $youAre.text("player " + winner + " won the game!");
+    } else { 
       $button.fadeIn();
     }
   } else {
-    $setContainer.text("sets on the table: " + sets);
     $button.fadeOut();
   }
 }
