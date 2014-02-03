@@ -113,7 +113,7 @@ function countSets() {
   if (sets === 0) {
     if ($(".card").length < 13) {
       var winner = findWinner();
-      $setContainer.text("player " + winner + "won the game!");
+      $setContainer.text("player " + winner + " won the game!");
     } else {
       $setContainer.text("no sets left on the table! reshuffle?"); 
       $button.fadeIn();
@@ -198,7 +198,7 @@ function findWinner() {
 
   for (var key in scores) {
     if (scores.hasOwnProperty(key)) {
-      if scores[key] > highest {
+      if (scores[key] > highest) {
         highest = scores[key];
         winner = key;
       }
