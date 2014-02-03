@@ -12,7 +12,7 @@ module SetGame
       set :public_folder, 'public'
     end
 
-    redis = Redis.new
+    # redis = Redis.new
 
     get "/css/set.css" do
       scss :set
@@ -35,6 +35,11 @@ module SetGame
     end
 
     helpers do
+      def redis
+        uri = URI.parse(ENV["REDISTOGO_URL"])
+        Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+      end
+      
       def partial(template,locals=nil)
         if template.is_a?(String) || template.is_a?(Symbol)
           template = :"_#{template}"
