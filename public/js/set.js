@@ -70,16 +70,19 @@ ws.onmessage = function(message) {
   if (data.room === room) {
     switch(data.command) {
       case "getPlayers":
-        players += 1;
-        scores[players] = 0;
-        $(".players").append("<h3 id='" + players + "''>player " + players + ": 0");
-        ws.send(JSON.stringify({command: "setPlayers", room: room, players: players, scores: scores, status: gameStarted}));
+        if (gameStarted === false) {
+          players += 1;
+          scores[players] = 0;
+          $(".players").append("<h3 id='" + players + "''>player " + players + ": 0");
+          ws.send(JSON.stringify({command: "setPlayers", room: room, players: players, scores: scores, status: gameStarted}));
+        }
         break;
       case "setPlayers":
         if (playerNumber === undefined) {
           if (data.status === true) {
             $youAre.text("sorry, the game has already started. you're too late.")
             $(".board").hide();
+            $(".players").hide();
             $(".start").hide();
             ws.close();
             return false;
