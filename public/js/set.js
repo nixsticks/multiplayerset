@@ -170,10 +170,11 @@ function removeSet(set) {
 // WEBSOCKET METHODS //
 
 ws.onopen = function(event) {
-  sendMessage({command: "getPlayers", room: room});
   if ($(".number").text() == 1) {
     players = 1, playerNumber = 1;
     $youAre.text("you are player 1");
+  } else {
+    sendMessage({command: "getPlayers", room: room});
   }
 }
 
