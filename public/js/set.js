@@ -76,25 +76,28 @@ ws.onmessage = function(message) {
         ws.send(JSON.stringify({command: "setPlayers", room: room, players: players, scores: scores, status: gameStarted}));
         break;
       case "setPlayers":
-        if (data.status === true) {
-          $youAre.text("sorry, the game has already started. you're too late.")
-          return false;
-        }
-
         if (playerNumber === undefined) {
-          players = data.players;
-          playerNumber = data.players;
-          scores = data.scores;
+          if (data.status === true) {
+            $youAre.text("sorry, the game has already started. you're too late.")
+            $(".board").hide();
+            $(".start").hide();
+            ws.close();
+            return false;
+          } else {
+            players = data.players;
+            playerNumber = data.players;
+            scores = data.scores;
 
-          $(".players").empty();
+            $(".players").empty();
 
-          for (var key in scores) {
-            if (scores.hasOwnProperty(key)) {
-              $(".players").append("<h3 id='" + key + "''>player " + key + ": " + scores[key]);
+            for (var key in scores) {
+              if (scores.hasOwnProperty(key)) {
+                $(".players").append("<h3 id='" + key + "''>player " + key + ": " + scores[key]);
+              }
             }
-          }
 
-          $youAre.text("you are player " + playerNumber);
+            $youAre.text("you are player " + playerNumber);
+          }
         }
         break;
       case "start":
