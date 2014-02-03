@@ -183,53 +183,55 @@ ws.onmessage = function(message) {
   var data = JSON.parse(message.data);
 
   switch(data.command) {
-    case "getPlayers":
-      console.log("I received getplayers");
-      if (gameStarted === false) {
-        players += 1;
-        scores[players] = 0;
-        $(".players").append("<h3 id='" + players + "''>player " + players + ": 0");
-      }
-      ws.send(JSON.stringify({command: "setPlayers", room: room, players: players, scores: scores, status: gameStarted}));
-      break;
-    case "setPlayers":
-      if (playerNumber === undefined) {
-        if (data.status === true) {
-          $youAre.text("sorry, the game has already started. you're too late.")
-          $(".board, .players, .start").hide();
-          ws.close();
-        } else {
-          players = data.players, playerNumber = data.players, scores = data.scores;
-          $(".players").empty();
-
-          for (var key in scores) {
-            if (scores.hasOwnProperty(key)) {
-              $(".players").append("<h3 id='" + key + "''>player " + key + ": " + scores[key]);
-            }
-          }
-
-          $youAre.text("you are player " + playerNumber);
+    if (data.room === room) {
+      case "getPlayers":
+        console.log("I received getplayers");
+        if (gameStarted === false) {
+          players += 1;
+          scores[players] = 0;
+          $(".players").append("<h3 id='" + players + "''>player " + players + ": 0");
         }
-      }
-      break;
-    case "start":
-      gameStarted = true;
-      $("div.board").removeClass("hidden");
-      $(".start").hide();
-      break;
-    case "removeSet":
-      var $cards = $(".board div.card");
-      var set = data.ids.map(function(id){ return $("[data-id='" + id + "']"); });
-      removeSet($(set).map (function () {return this.toArray();}));
-      scores[data.player] += 1;
-      $("#" + data.player).text("player " + data.player + ": " + scores[data.player]);
-      break;
-    case "shuffleCards":
-      shuffleCards();
-      break;
-    case "leave":
-      $("#" + data.player).text("player " + data.player + " left the game");
-      break;
+        ws.send(JSON.stringify({command: "setPlayers", room: room, players: players, scores: scores, status: gameStarted}));
+        break;
+      case "setPlayers":
+        if (playerNumber === undefined) {
+          if (data.status === true) {
+            $youAre.text("sorry, the game has already started. you're too late.")
+            $(".board, .players, .start").hide();
+            ws.close();
+          } else {
+            players = data.players, playerNumber = data.players, scores = data.scores;
+            $(".players").empty();
+
+            for (var key in scores) {
+              if (scores.hasOwnProperty(key)) {
+                $(".players").append("<h3 id='" + key + "''>player " + key + ": " + scores[key]);
+              }
+            }
+
+            $youAre.text("you are player " + playerNumber);
+          }
+        }
+        break;
+      case "start":
+        gameStarted = true;
+        $("div.board").removeClass("hidden");
+        $(".start").hide();
+        break;
+      case "removeSet":
+        var $cards = $(".board div.card");
+        var set = data.ids.map(function(id){ return $("[data-id='" + id + "']"); });
+        removeSet($(set).map (function () {return this.toArray();}));
+        scores[data.player] += 1;
+        $("#" + data.player).text("player " + data.player + ": " + scores[data.player]);
+        break;
+      case "shuffleCards":
+        shuffleCards();
+        break;
+      case "leave":
+        $("#" + data.player).text("player " + data.player + " left the game");
+        break;
+    }
   }
 }
 

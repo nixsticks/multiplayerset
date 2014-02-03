@@ -25,11 +25,7 @@ class Backend
         message = JSON.parse(event.data)
         MUTEX.synchronize {
           @clients[ws] = message["room"]
-          @clients.each do |client, room|
-            if ws != client && room == message["room"]
-              client.send(event.data)
-            end
-          end
+          @clients.each {|client, room| client.send(event.data) unless ws == client}
         }
       end
 
