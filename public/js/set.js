@@ -6,7 +6,7 @@ var $scoreContainer = $(".score h3").first();
 var $youAre         = $(".score h3").last();
 var $button         = $(".button");
 var gameStarted     = false;
-var scores          = {1: 0};
+var scores;
 var players;
 var playerNumber;
 
@@ -197,7 +197,10 @@ ws.onmessage = function(message) {
           $(".board, .players, .start").hide();
           ws.close();
         } else {
-          players = data.players, playerNumber = data.players, scores = data.scores;
+          players = data.players;
+          playerNumber = data.players;
+          scores = data.scores;
+
           $(".players").empty();
 
           for (var key in scores) {
