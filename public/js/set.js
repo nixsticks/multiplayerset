@@ -12,13 +12,11 @@ var playerNumber;
 
 ws.onopen = function(event) {
   ws.send(JSON.stringify({command: "getPlayers", room: room}))
-  setTimeout(function(){
-    if (!players) {
-      players = 1, playerNumber = 1;
-      $youAre.text("you are player 1");
-      scores = {1: 0};
-    }
-  }, 500);
+  if ($(".number").text() == 1) {
+    players = 1, playerNumber = 1;
+    $youAre.text("you are player 1");
+    scores = {1: 0};
+  }
 }
 
 function updatePlayers(number) {
@@ -44,7 +42,6 @@ $(document).ready(function() {
     if ($chosen.length === 3) {
       if (isASet($chosen)) {
         var ids = jQuery.makeArray(mapTraits($chosen, "id"));
-        console.log(ids);
         removeSet($chosen);
         updateScore();
         ws.send(JSON.stringify({command: "removeSet", room: room, ids: ids, player: playerNumber}));
@@ -59,7 +56,7 @@ $(document).ready(function() {
     ws.send(JSON.stringify({command: "shuffleCards", room: room}));
   });
 
-  $(".start").on("click", function() {
+  $(".start h3").on("click", function() {
     gameStarted = true;
     $("div.board").removeClass("hidden");
     $(this).hide();
@@ -76,9 +73,14 @@ ws.onmessage = function(message) {
         players += 1;
         scores[players] = 0;
         $(".players").append("<h3 id='" + players + "''>player " + players + ": 0");
-        ws.send(JSON.stringify({command: "setPlayers", room: room, players: players, scores: scores}));
+        ws.send(JSON.stringify({command: "setPlayers", room: room, players: players, scores: scores, status: gameStarted}));
         break;
       case "setPlayers":
+        if (data.status === true) {
+          $youAre.text("sorry, the game has already started. you're too late.")
+          return false;
+        }
+
         if (playerNumber === undefined) {
           players = data.players;
           playerNumber = data.players;

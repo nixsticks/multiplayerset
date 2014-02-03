@@ -28,6 +28,7 @@ module SetGame
       else
         deck = Deck.new("data/set.yml")
         @cards = deck.cards.shuffle
+        @number = 1
         redis.set(params[:game_id], YAML::dump(@cards))
       end
 
@@ -39,7 +40,7 @@ module SetGame
         uri = URI.parse(ENV["REDISTOGO_URL"])
         Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
       end
-      
+
       def partial(template,locals=nil)
         if template.is_a?(String) || template.is_a?(Symbol)
           template = :"_#{template}"
