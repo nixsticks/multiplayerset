@@ -170,8 +170,9 @@ function removeSet(set) {
 // WEBSOCKET METHODS //
 
 ws.onopen = function(event) {
-  if ($(".number").text() == 1) {
+  if ($(".number").text().trim() === "1") {
     players = 1, playerNumber = 1;
+    scores = {1: 0};
     $youAre.text("you are player 1");
   } else {
     sendMessage({command: "getPlayers", room: room});
@@ -183,12 +184,13 @@ ws.onmessage = function(message) {
 
   switch(data.command) {
     case "getPlayers":
+      console.log("I received getplayers");
       if (gameStarted === false) {
         players += 1;
         scores[players] = 0;
         $(".players").append("<h3 id='" + players + "''>player " + players + ": 0");
       }
-      sendMessage({command: "setPlayers", room: room, players: players, scores: scores, status: gameStarted});
+      ws.send(JSON.stringify({command: "setPlayers", room: room, players: players, scores: scores, status: gameStarted}));
       break;
     case "setPlayers":
       if (playerNumber === undefined) {
@@ -197,10 +199,7 @@ ws.onmessage = function(message) {
           $(".board, .players, .start").hide();
           ws.close();
         } else {
-          players = data.players;
-          playerNumber = data.players;
-          scores = data.scores;
-
+          players = data.players, playerNumber = data.players, scores = data.scores;
           $(".players").empty();
 
           for (var key in scores) {
