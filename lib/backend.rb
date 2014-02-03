@@ -24,8 +24,8 @@ class Backend
         p [:message, event.data]
         message = JSON.parse(event.data)
         MUTEX.synchronize {
-          @clients[ws] = message["content"] if message["command"] == "handle"
-          @clients.keys.each {|client| client.send(event.data) unless ws == client}
+          @clients[ws] = message["room"]
+          @clients.keys.each {|client| client.send(event.data) if @clients[client] == message["room"] && ws == client}
         }
       end
 
@@ -34,7 +34,6 @@ class Backend
         MUTEX.synchronize {
           leaver = @clients[ws]
           @clients.delete(ws)
-          @clients.keys.each {|client| client.send(JSON::dump({"content" => leaver, "command" => "leave"}))}
         }
         ws = nil
       end

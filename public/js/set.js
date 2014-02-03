@@ -10,18 +10,7 @@ var scores;
 var players;
 var playerNumber;
 
-ws.onopen = function(event) {
-  ws.send(JSON.stringify({command: "getPlayers", room: room}))
-  if ($(".number").text() == 1) {
-    players = 1, playerNumber = 1;
-    $youAre.text("you are player 1");
-    scores = {1: 0};
-  }
-}
-
-function updatePlayers(number) {
-  $(".players h3").last().append("<h3 id=" + players + "> player " + number + ": 0");
-}
+// EVENT FUNCTIONS //
 
 $(window).unload(function() {
   ws.send(JSON.stringify({command: "leave", room: room, player: playerNumber}));
@@ -42,9 +31,9 @@ $(document).ready(function() {
     if ($chosen.length === 3) {
       if (isASet($chosen)) {
         var ids = jQuery.makeArray(mapTraits($chosen, "id"));
-        removeSet($chosen);
+        $.when(removeSet($chosen)).done(countSets);
         updateScore();
-        ws.send(JSON.stringify({command: "removeSet", room: room, ids: ids, player: playerNumber}));
+        sendMessage({command: "removeSet", room: room, ids: ids, player: playerNumber});
       } else {
         $chosen.removeClass("chosen");
       }
@@ -53,91 +42,24 @@ $(document).ready(function() {
 
   $button.on("click", function() {
     shuffleCards();
-    ws.send(JSON.stringify({command: "shuffleCards", room: room}));
+    sendMessage({command: "shuffleCards", room: room});
   });
 
   $(".start h3").on("click", function() {
     gameStarted = true;
     $("div.board").removeClass("hidden");
     $(this).hide();
-    ws.send(JSON.stringify({command: "start", room: room}))
+    sendMessage({command: "start", room: room});
   })
 });
 
-ws.onmessage = function(message) {
-  var data = JSON.parse(message.data);
-
-  if (data.room === room) {
-    switch(data.command) {
-      case "getPlayers":
-        if (gameStarted === false) {
-          players += 1;
-          scores[players] = 0;
-          $(".players").append("<h3 id='" + players + "''>player " + players + ": 0");
-        }
-        ws.send(JSON.stringify({command: "setPlayers", room: room, players: players, scores: scores, status: gameStarted}));
-        break;
-      case "setPlayers":
-        if (playerNumber === undefined) {
-          if (data.status === true) {
-            $youAre.text("sorry, the game has already started. you're too late.")
-            $(".board").hide();
-            $(".players").hide();
-            $(".start").hide();
-            ws.close();
-            return false;
-          } else {
-            players = data.players;
-            playerNumber = data.players;
-            scores = data.scores;
-
-            $(".players").empty();
-
-            for (var key in scores) {
-              if (scores.hasOwnProperty(key)) {
-                $(".players").append("<h3 id='" + key + "''>player " + key + ": " + scores[key]);
-              }
-            }
-
-            $youAre.text("you are player " + playerNumber);
-          }
-        }
-        break;
-      case "start":
-        gameStarted = true;
-        $("div.board").removeClass("hidden");
-        $(".start").hide();
-        break;
-      case "removeSet":
-        var $cards = $(".board div.card");
-        var set = data.ids.map(function(id){
-          return $("[data-id='" + id + "']");
-        });
-        removeSet($(set).map (function () {return this.toArray(); } ));
-        scores[data.player] += 1;
-        $("#" + data.player).text("player " + data.player + ": " + scores[data.player]);
-        break;
-      case "shuffleCards":
-        shuffleCards();
-        break;
-      case "leave":
-        $("#" + data.player).text("player " + data.player + " left the game");
-        break;
-    }
-  }
-}
-
-function updateScore() {
-  scores[playerNumber] += 1;
-  $("#" + playerNumber).text("player " + playerNumber + ": " + scores[playerNumber]);
-}
+// HELPER FUNCTIONS //
 
 function countSets() {
   var sets = findSets();
   if (sets === 0) {
     if ($(".card").length < 13) {
-      var winner = findWinner();
-      $youAre.text("player " + winner + " won the game!");
+      $scoreContainer.text("game completed!")
     } else { 
       $button.fadeIn();
     }
@@ -166,17 +88,6 @@ function shuffleCards() {
   }
   $button.fadeOut();
   countSets();
-}
-
-function removeSet(set) {
-  var score = parseInt($scoreContainer.text().match(/\d+/g));
-  $scoreContainer.text("cards remaining: " + (score - 3));
-
-  set.fadeOut("slow", function(){
-    $(this).replaceWith($(".hidden .card").first());
-    countSets();
-    $(this).fadeIn("slow");
-  });
 }
 
 function findSets() {
@@ -214,22 +125,6 @@ function mapTraits(collection, trait) {
   return collection.map(function() { return $(this).data(trait); });
 }
 
-function findWinner() {
-  var highest = scores[1];
-  var winner = 1;
-
-  for (var key in scores) {
-    if (scores.hasOwnProperty(key)) {
-      if (scores[key] > highest) {
-        highest = scores[key];
-        winner = key;
-      }
-    }
-  }
-
-  return winner;
-}
-
 function k_combinations(set, k) {
   //taken from https://gist.github.com/axelpale
   var i, j, combs, head, tailcombs;
@@ -249,4 +144,93 @@ function k_combinations(set, k) {
     for (j = 0; j < tailcombs.length; j++) { combs.push(head.concat(tailcombs[j])); }
   }
   return combs;
+}
+
+// HTML MANIPULATION //
+
+function updatePlayers(number) {
+  $(".players h3").last().append("<h3 id=" + players + "> player " + number + ": 0");
+}
+
+function updateScore() {
+  scores[playerNumber] += 1;
+  $("#" + playerNumber).text("player " + playerNumber + ": " + scores[playerNumber]);
+}
+
+function removeSet(set) {
+  var score = parseInt($scoreContainer.text().match(/\d+/g));
+  $scoreContainer.text("cards remaining: " + (score - 3));
+
+  set.fadeOut("slow", function(){
+    $(this).replaceWith($(".hidden .card").first());
+    $(this).fadeIn("slow");
+  });
+}
+
+// WEBSOCKET METHODS //
+
+ws.onopen = function(event) {
+  sendMessage({command: "getPlayers", room: room});
+  if ($(".number").text() == 1) {
+    players = 1, playerNumber = 1;
+    $youAre.text("you are player 1");
+    scores = {1: 0};
+  }
+}
+
+ws.onmessage = function(message) {
+  var data = JSON.parse(message.data);
+
+  switch(data.command) {
+    case "getPlayers":
+      if (gameStarted === false) {
+        players += 1;
+        scores[players] = 0;
+        $(".players").append("<h3 id='" + players + "''>player " + players + ": 0");
+      }
+      sendMessage({command: "setPlayers", room: room, players: players, scores: scores, status: gameStarted});
+      break;
+    case "setPlayers":
+      if (playerNumber === undefined) {
+        if (data.status === true) {
+          $youAre.text("sorry, the game has already started. you're too late.")
+          $(".board, .players, .start").hide();
+          ws.close();
+        } else {
+          players = data.players, playerNumber = data.players, scores = data.scores;
+          $(".players").empty();
+
+          for (var key in scores) {
+            if (scores.hasOwnProperty(key)) {
+              $(".players").append("<h3 id='" + key + "''>player " + key + ": " + scores[key]);
+            }
+          }
+
+          $youAre.text("you are player " + playerNumber);
+        }
+      }
+      break;
+    case "start":
+      gameStarted = true;
+      $("div.board").removeClass("hidden");
+      $(".start").hide();
+      break;
+    case "removeSet":
+      var $cards = $(".board div.card");
+      var set = data.ids.map(function(id){ return $("[data-id='" + id + "']"); });
+      removeSet($(set).map (function () {return this.toArray();}));
+      scores[data.player] += 1;
+      $("#" + data.player).text("player " + data.player + ": " + scores[data.player]);
+      break;
+    case "shuffleCards":
+      shuffleCards();
+      break;
+    case "leave":
+      $("#" + data.player).text("player " + data.player + " left the game");
+      break;
+  }
+}
+
+function sendMessage(message) {
+  ws.send(JSON.stringify(message));
 }
