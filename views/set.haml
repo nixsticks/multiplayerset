@@ -1,0 +1,24 @@
+%h1 set
+
+.score
+  %h3 cards remaining: 81
+  %h3 
+
+.button
+  %h3 click to reshuffle deck
+
+.board
+  - @cards[0..11].each_slice(3) do |slice|
+    .row
+      - slice.each do |card|
+        = partial :card, @card=card
+
+.players
+  %h3{id: "1"} player 1: 0
+
+.deck.hidden
+  - @cards[12..80].each do |card|
+    = partial :card, @card=card
+
+%script{:src=>"http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"}
+%script{:src=>"/js/set.js"}
