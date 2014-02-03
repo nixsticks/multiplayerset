@@ -182,8 +182,8 @@ ws.onopen = function(event) {
 ws.onmessage = function(message) {
   var data = JSON.parse(message.data);
 
-  switch(data.command) {
-    if (data.room === room) {
+  if (data.room === room) {
+    switch(data.command) {
       case "getPlayers":
         console.log("I received getplayers");
         if (gameStarted === false) {
