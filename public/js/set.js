@@ -27,7 +27,7 @@ $(document).ready(function() {
     if ($chosen.length === 3) {
       if (isASet($chosen)) {
         var ids = jQuery.makeArray(mapTraits($chosen, "id"));
-        removeSet();
+        removeSet($chosen);
         updateScore();
         sendMessage({command: "removeSet", room: room, ids: ids, player: playerNumber});
       } else {
