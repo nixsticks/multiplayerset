@@ -27,7 +27,7 @@ $(document).ready(function() {
     if ($chosen.length === 3) {
       if (isASet($chosen)) {
         var ids = jQuery.makeArray(mapTraits($chosen, "id"));
-        $.when(removeSet($chosen)).done(countSets);
+        removeSet();
         updateScore();
         sendMessage({command: "removeSet", room: room, ids: ids, player: playerNumber});
       } else {
@@ -150,17 +150,22 @@ function updatePlayers(number) {
 }
 
 function updateScore() {
+  var score = parseInt($scoreContainer.text().match(/\d+/g));
+  $scoreContainer.text("cards remaining: " + (score - 3));
   scores[playerNumber] += 1;
   $("#" + playerNumber).text("player " + playerNumber + ": " + scores[playerNumber]);
 }
 
 function removeSet(set) {
-  var score = parseInt($scoreContainer.text().match(/\d+/g));
-  $scoreContainer.text("cards remaining: " + (score - 3));
-
   set.fadeOut("slow", function(){
-    $(this).replaceWith($(".hidden .card").first());
-    $(this).fadeIn("slow");
+    var $this = $(this);
+    $(".hidden .card").first().insertBefore(this);
+    $this.detach;
+  });
+
+  set.promise().done(function() {
+    countSets();
+    $(this).remove();
   });
 }
 
