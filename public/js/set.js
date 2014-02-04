@@ -12,10 +12,6 @@ var playerNumber;
 
 // EVENT FUNCTIONS //
 
-$(window).unload(function() {
-  ws.send(JSON.stringify({command: "leave", room: room, player: playerNumber}));
-});
-
 $(document).ready(function() {
   var $card = $("div.card");
 
@@ -192,7 +188,7 @@ ws.onmessage = function(message) {
           scores[players] = 0;
           $(".players").append("<h3 id='" + players + "''>player " + players + ": 0");
         }
-        ws.send(JSON.stringify({command: "setPlayers", room: room, players: players, scores: scores, status: gameStarted}));
+        sendMessage({command: "setPlayers", room: room, players: players, scores: scores, status: gameStarted});
         break;
       case "setPlayers":
         if (playerNumber === undefined) {
@@ -236,6 +232,10 @@ ws.onmessage = function(message) {
         break;
     }
   }
+}
+
+ws.onclose = function(event) {
+  sendMessage({command: "leave", room: room, player: playerNumber});
 }
 
 function sendMessage(message) {
