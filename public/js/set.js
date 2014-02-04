@@ -89,7 +89,7 @@ function shuffleCards() {
 
 function findSets() {
   var counter = 0;
-  var $cardsOnTable = $(".board div.card").not(".chosen");
+  var $cardsOnTable = $(".board div.card");
   
   var set = jQuery.makeArray($cardsOnTable);
   var combinations = k_combinations(set, 3);
