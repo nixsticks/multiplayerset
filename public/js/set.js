@@ -229,6 +229,7 @@ ws.onmessage = function(message) {
         break;
       case "leave":
         $("#" + data.player).text("player " + data.player + " left the game");
+        delete scores[data.player];
         break;
     }
   }
