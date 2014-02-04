@@ -59,8 +59,9 @@ function countSets() {
   var sets = findSets();
   if (sets === 0) {
     if ($(".card").length < 13) {
-      $scoreContainer.text("game completed!")
+      $scoreContainer.text("game over!")
     } else { 
+      sendMessage({command: "noSets", room: room})
       $button.fadeIn();
     }
   } else {
@@ -196,7 +197,7 @@ ws.onmessage = function(message) {
       case "setPlayers":
         if (playerNumber === undefined) {
           if (data.status === true) {
-            $youAre.text("sorry, the game has already started. you're too late.")
+            $youAre.text("sorry, the game has already started.")
             $(".board, .players, .start").hide();
             ws.close();
           } else {
@@ -225,6 +226,8 @@ ws.onmessage = function(message) {
         scores[data.player] += 1;
         $("#" + data.player).text("player " + data.player + ": " + scores[data.player]);
         break;
+      case "noSets":
+        $button.fadeIn();
       case "shuffleCards":
         shuffleCards();
         break;
