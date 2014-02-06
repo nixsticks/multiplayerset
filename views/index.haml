@@ -1,1 +1,10 @@
-%a{href: "/set/#{SecureRandom.urlsafe_base64(5)}"} Start a game
+%h1 SET: THE GAME
+
+%p{class: "white"} Click the button below to start a new game that anyone can join.
+%p{class: "white"} Then share the link with your friends so they can enter the room and play the game!
+
+.pagebutton
+  %a{href: "/set/#{SecureRandom.urlsafe_base64(5)}"} Start a game
+
+.pagebutton
+  %a{href: "http://set-game.herokuapp.com/games/students/set/set"} Single-Player Version
