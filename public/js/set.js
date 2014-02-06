@@ -6,6 +6,7 @@ var $scoreContainer = $(".score h3").first();
 var $youAre         = $(".score h3").last();
 var $button         = $(".button");
 var gameStarted     = false;
+var cardNumber      = 81;
 var scores;
 var players;
 var playerNumber;
@@ -150,10 +151,13 @@ function updatePlayers(number) {
 }
 
 function updateScore() {
-  var score = parseInt($scoreContainer.text().match(/\d+/g));
-  $scoreContainer.text("cards remaining: " + (score - 3));
   scores[playerNumber] += 1;
   $("#" + playerNumber).text("player " + playerNumber + ": " + scores[playerNumber]);
+}
+
+function changeCardNumber() {
+  cardNumber -= 3;
+  $scoreContainer.text("cards remaining: " + cardNumber);
 }
 
 function removeSet(set) {
@@ -179,7 +183,7 @@ ws.onopen = function(event) {
   } else {
     sendMessage({command: "getPlayers", room: room});
   }
-}
+};
 
 ws.onmessage = function(message) {
   var data = JSON.parse(message.data);
@@ -222,13 +226,15 @@ ws.onmessage = function(message) {
         break;
       case "removeSet":
         var $cards = $(".board div.card");
-        var set = data.ids.map(function(id){ return $("[data-id='" + id + "']"); });
-        removeSet($(set).map (function () {return this.toArray();}));
+        var set = data.ids.map(function(id) { return $("[data-id='" + id + "']"); });
+        removeSet($(set).map (function() {return this.toArray();}));
+        changeCardNumber();
         scores[data.player] += 1;
         $("#" + data.player).text("player " + data.player + ": " + scores[data.player]);
         break;
       case "noSets":
         $button.fadeIn();
+        break;
       case "shuffleCards":
         shuffleCards();
         break;
