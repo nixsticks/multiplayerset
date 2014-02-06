@@ -30,6 +30,7 @@ $(document).ready(function() {
         var ids = jQuery.makeArray(mapTraits($chosen, "id"));
         removeSet($chosen);
         updateScore();
+        changeCardNumber();
         sendMessage({command: "removeSet", room: room, ids: ids, player: playerNumber});
       } else {
         $chosen.removeClass("chosen");
@@ -55,7 +56,7 @@ $(document).ready(function() {
 function countSets() {
   var sets = findSets();
   if (sets === 0) {
-    if ($(".card").length < 13) {
+    if (cardNumber < 13) {
       $scoreContainer.text("game over!")
     } else { 
       sendMessage({command: "noSets", room: room})
@@ -191,7 +192,6 @@ ws.onmessage = function(message) {
   if (data.room === room) {
     switch(data.command) {
       case "getPlayers":
-        console.log("I received getplayers");
         if (gameStarted === false) {
           players += 1;
           scores[players] = 0;
